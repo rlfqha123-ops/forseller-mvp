@@ -11,6 +11,11 @@ export default function DashboardPage() {
   const [partnerName, setPartnerName] = useState("rlfqha123-ops");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // 알림톡 모의 발송 시스템 상태 관리
+  const [isSending, setIsSending] = useState(false);
+  const [sendResult, setSendResult] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
   // 로컬스토리지에서 로그인 세션 복구 및 동적 반영
   useEffect(() => {
     try {
@@ -233,6 +238,74 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* ⚡ 카카오 알림톡 모의 전송 수동 검증 위젯 */}
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+          {/* 장식용 테두리 조명 효과 */}
+          <div className="absolute -left-10 -top-10 w-32 h-32 bg-yellow-500/5 blur-[50px] rounded-full pointer-events-none" />
+          
+          <div className="space-y-2 max-w-2xl relative z-10">
+            <div className="flex items-center gap-2">
+              <span className="animate-pulse w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="text-[11px] bg-yellow-100 text-yellow-800 font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider block w-fit">
+                PIVOT CORE SYSTEM
+              </span>
+            </div>
+            <h3 className="text-lg font-extrabold text-slate-900 tracking-tight leading-tight">
+              💬 카카오 알림톡 자동화 발송 모의 검증 센터
+            </h3>
+            <p className="text-slate-500 text-xs md:text-sm font-normal leading-relaxed">
+              매일 아침 8시 크론(Cron) 스케줄러가 작동하여 Supabase 큐에 등록된 회원들의 휴대폰으로 
+              마진 리포트를 대행사 API(SOLAPI) 규격에 맞춰 전송하는 핵심 백엔드 기능입니다. 
+              <strong> 아래 테스트 버튼을 누르면 즉각 모의 발송 루프가 수행됩니다.</strong>
+            </p>
+          </div>
+
+          <div className="shrink-0 relative z-10">
+            <button
+              onClick={async () => {
+                if (isSending) return;
+                setIsSending(true);
+                try {
+                  const res = await fetch(`/api/cron/send-reports?partner=${partnerName}`);
+                  const data = await res.json();
+                  if (data.success) {
+                    setSendResult(data);
+                    setShowModal(true);
+                  } else {
+                    alert("모의 발송 시뮬레이션 중 오류가 발생했습니다.");
+                  }
+                } catch (err) {
+                  console.error(err);
+                  alert("서버 연결에 실패했습니다.");
+                } finally {
+                  setIsSending(false);
+                }
+              }}
+              disabled={isSending}
+              className={`w-full md:w-auto px-6 py-4 rounded-2xl font-black text-sm text-slate-950 flex items-center justify-center gap-2.5 transition-all duration-300 shadow-md ${
+                isSending 
+                  ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
+                  : "bg-gradient-to-r from-yellow-400 to-amber-300 hover:from-yellow-500 hover:to-amber-400 active:scale-95 cursor-pointer shadow-yellow-400/10 hover:shadow-lg"
+              }`}
+            >
+              {isSending ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-slate-950" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>대량 발송 처리 중...</span>
+                </>
+              ) : (
+                <>
+                  <span>⚡</span>
+                  <span>카카오 알림톡 발송 모의 테스트 실행</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
         {/* 2분할 메인 콘텐츠 바디 레이아웃 */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
@@ -376,6 +449,98 @@ export default function DashboardPage() {
         </div>
 
       </main>
+
+      {/* 📱 카카오톡 스타일 프리뷰 팝업 모달 */}
+      {showModal && sendResult && (
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#1e1e1e] rounded-3xl border border-slate-700 w-full max-w-md overflow-hidden shadow-2xl transition-all transform scale-100 flex flex-col max-h-[85vh]">
+            
+            {/* 모달 상단 헤더 */}
+            <div className="bg-[#fdcb00] text-slate-900 px-6 py-4 flex items-center justify-between border-b border-yellow-500 shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">💬</span>
+                <div className="text-left">
+                  <span className="font-extrabold text-sm tracking-tight block leading-none">forSeller AI 알림톡</span>
+                  <span className="text-[10px] text-slate-800 font-bold block mt-1">발송 결과 영수증</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-8 h-8 rounded-lg bg-black/10 hover:bg-black/20 flex items-center justify-center text-slate-900 font-black cursor-pointer text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 모달 바디 (카톡 메시지 컨테이너) */}
+            <div className="p-6 bg-[#bacdce] flex-1 overflow-y-auto space-y-4 select-none animate-fade-in">
+              
+              {/* 시스템 모의 결과 현황판 */}
+              <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2">
+                <h4 className="font-extrabold text-xs text-slate-950 flex items-center gap-1.5 pb-1.5 border-b border-slate-100">
+                  <span>📊</span> 백엔드 시뮬레이션 리포트
+                </h4>
+                <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 font-semibold">
+                  <div>
+                    <span className="text-slate-400 block font-normal">발송 대상자</span>
+                    <span className="text-slate-900">{sendResult.totalCount}명 (대량 발송 루프 완료)</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-normal">DB 데이터 출처</span>
+                    <span className="text-slate-900">{sendResult.usingFallback?.report ? "가상 모의 데이터" : "Supabase Live 테이블"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-normal">기준 발송일자</span>
+                    <span className="text-slate-900">{sendResult.processedDate}</span>
+                  </div>
+                  <div>
+                    <span className="text-emerald-800 block font-normal">큐 동기화 상태</span>
+                    <span className="text-emerald-600">성공 (Success)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 카카오톡 메시지 거품 말풍선 */}
+              <div className="flex items-start gap-2 max-w-[90%] text-left">
+                <div className="w-9 h-9 rounded-xl bg-yellow-400 text-slate-950 flex items-center justify-center font-black text-xs shrink-0 select-none shadow-sm">
+                  fS
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-slate-600 font-bold block ml-0.5">forSeller AI</span>
+                  
+                  {/* 노란색 카톡 수신 박스 */}
+                  <div className="bg-[#ffffffe6] border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm text-xs text-slate-800 leading-relaxed font-medium whitespace-pre-wrap">
+                    {sendResult.messagePreview}
+                  </div>
+                </div>
+              </div>
+
+              {/* 터미널 출력 강조 안내 */}
+              <div className="bg-black/70 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center text-white space-y-1.5">
+                <div className="flex items-center justify-center gap-1.5 text-yellow-400 font-black text-[11px]">
+                  <span>📟</span>
+                  <span>컴퓨터 터미널(Terminal) 콘솔 실시간 인쇄!</span>
+                </div>
+                <p className="text-[10px] text-slate-300 font-normal leading-normal">
+                  서버 백엔드 실행 창에 가독성 극대화된 [100% 한글 알림톡 수신 프리뷰 박스]가 실시간으로 성공 인쇄되었습니다. Vercel 실서버 로그 및 로컬 VS Code 터미널에서 지금 즉시 확인해보세요!
+                </p>
+              </div>
+
+            </div>
+
+            {/* 모달 하단 */}
+            <div className="bg-[#1e1e1e] p-4 border-t border-slate-800 flex gap-2 shrink-0">
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-full bg-[#fdcb00] hover:bg-yellow-500 active:scale-[0.98] text-slate-950 font-black text-xs py-3.5 rounded-xl transition-all cursor-pointer text-center"
+              >
+                검증 및 연동 확인 완료
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
