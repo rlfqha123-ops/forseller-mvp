@@ -34,12 +34,12 @@ export default function LoginPage() {
       setAutoLogin(true);
     }
 
-    // 이미 활성 세션이 존재하고 자동 로그인이 켜져 있다면 메인 홈으로 리다이렉트
+    // 이미 활성 세션이 존재하고 자동 로그인이 켜져 있다면 셀러 대시보드로 리다이렉트
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session && savedAutoLogin) {
         setSuccess(true);
-        router.push("/");
+        router.push("/dashboard");
       }
     };
     checkSession();
@@ -96,9 +96,9 @@ export default function LoginPage() {
       setIsSubmitting(false);
       setSuccess(true);
 
-      // 성공 모달 노출 후 메인 홈('/')으로 즉시 라우팅 이동
+      // 성공 모달 노출 후 셀러 소싱 대시보드('/dashboard')로 즉시 라우팅 이동
       setTimeout(() => {
-        router.push("/");
+        router.push("/dashboard");
       }, 1000);
     } catch (err) {
       setError("서버와 통신하는 중 문제가 발생했습니다.");
@@ -166,7 +166,7 @@ export default function LoginPage() {
         {/* 로그인 성공 팝업/모달 효과 */}
         {success && (
           <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs p-4 rounded-xl mb-6 text-center animate-fade-in font-extrabold">
-            🎉 로그인 성공! 잠시 후 메인 홈으로 이동합니다.
+            🎉 로그인 성공! 잠시 후 셀러 대시보드로 이동합니다.
           </div>
         )}
 
