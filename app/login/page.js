@@ -118,7 +118,7 @@ export default function LoginPage() {
       }
 
       const oauthOptions = {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: "https://forseller-mvp.vercel.app/auth/callback",
       };
 
       // 카카오 앱이 개인 개발자용이라 이메일 권한이 없을 경우를 대비해, 
