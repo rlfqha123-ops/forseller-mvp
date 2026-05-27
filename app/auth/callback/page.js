@@ -16,7 +16,7 @@ export default function AuthCallbackPage() {
         if (session) {
           // 소셜 로그인이 성공하면 기본적으로 자동 로그인 상태를 활성화함
           localStorage.setItem("forSeller_autoLogin", "true");
-          router.replace("/");
+          router.replace("/dashboard");
         } else {
           // 세션 취득이 되지 않았을 경우 로그인 페이지로 리다이렉트
           router.replace("/login");
