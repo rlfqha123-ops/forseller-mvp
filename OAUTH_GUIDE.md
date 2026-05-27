@@ -55,11 +55,22 @@
 
 ## 3. 버셀 (Vercel) 배포 시 추가 설정 (Redirect URLs)
 
-Next.js 클라이언트 코드(`signInWithOAuth`)에서 소셜 로그인 호출 시 `redirectTo` 옵션에 `window.location.origin/auth/callback`을 지정하도록 안전하게 코드가 작성되어 있습니다. 
+Next.js 클라이언트 코드(`signInWithOAuth`)에서 소셜 로그인 호출 시 `redirectTo` 옵션에 `window.location.origin/auth/callback`을 지정하도록 안전하고 유연하게 코드가 설계되어 있습니다. 
 
-따라서 실제 Vercel 등으로 배포를 진행한 경우, 사용자가 로그인 완료 후 버셀 앱 화면으로 정상 라우팅되도록 **수파베이스 대시보드에 프로덕션 도메인을 허용 등록**해주어야 합니다.
+따라서 실제 Vercel 등으로 배포를 진행한 경우, 사용자가 로그인 완료 후 버셀 앱 화면으로 정상 라우팅되도록 **수파베이스 대시보드의 URL 설정 및 카카오 프로바이더 옵션**을 완벽하게 맞추어 주어야만 에러가 발생하지 않습니다.
 
-1. **Supabase 대시보드 접속** > `Authentication` > `URL Configuration`으로 이동합니다.
-2. **Redirect URLs** 섹션에 버셀 프로덕션 주소를 추가합니다.
-   * 예: `https://forseller-mvp.vercel.app/auth/callback`
-   * 개발 환경 주소(`http://localhost:3000/auth/callback`)는 Supabase가 자동으로 허용하므로 별도로 추가하지 않아도 무방합니다.
+### 🚨 [중요] 수파베이스 콘솔 2단계 최종 조치 사항
+
+#### 1) Site URL 및 Redirect URLs 설정 (localhost 튕김 현상 해결)
+카카오 로그인 완료 후 실제 버셀 주소가 아닌 `localhost:3000`으로 튕기는 문제는 Next.js 코드 오류가 아니라, **수파베이스 대시보드에 등록된 사이트 대표 주소가 localhost로 지정되어 있어 수파베이스 인증서버가 그곳으로 강제 리다이렉트하기 때문**입니다.
+* **Supabase Dashboard 접속** > `Authentication` > `URL Configuration`으로 이동합니다.
+* **Site URL** 값을 `http://localhost:3000`에서 실제 버셀 도메인인 **`https://forseller-mvp.vercel.app`**으로 수정합니다.
+* **Redirect URLs** 목록에 **`https://forseller-mvp.vercel.app/auth/callback`** 주소가 정상적으로 등록되어 있는지 다시 확인하고, 없다면 반드시 추가 후 **Save** 버튼을 누릅니다.
+
+#### 2) Kakao Provider 설정의 '이메일 없는 사용자 허용' 활성화 (이메일 에러 해결)
+개인 개발자용 카카오 앱은 사용자 이메일(`account_email`) 수집 권한을 가질 수 없습니다. 이 상태에서 로그인 동의 후 수파베이스 인증서버가 유저 생성을 시도할 때, 이메일 정보가 유실되어 `Error getting user email from external provider` 에러를 던지며 프로세스를 차단합니다.
+* **Supabase Dashboard 접속** > `Authentication` > `Providers` > **`Kakao`** 설정 메뉴로 이동합니다.
+* **`Allow users without an email`** (이메일 없는 사용자 허용) 토글 스위치를 **ON (활성화)** 상태로 켭니다.
+* 설정 완료 후 하단의 **Save** 버튼을 눌러 저장합니다.
+* 이 설정이 완료되면, 이메일 권한이 없는 개인 개발자용 카카오 앱 환경에서도 수파베이스가 정상적으로 닉네임과 프로필 정보를 매칭하여 신규 유저 등록 및 대시보드 로그인 처리를 성공적으로 마감합니다.
+
