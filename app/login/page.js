@@ -117,11 +117,18 @@ export default function LoginPage() {
         localStorage.removeItem("forSeller_autoLogin");
       }
 
+      const oauthOptions = {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      };
+
+      // 카카오 앱이 개인 개발자용이라 이메일 권한이 없을 경우를 대비해 닉네임과 프로필 사진만 요청하도록 스코프를 제한합니다.
+      if (provider === "kakao") {
+        oauthOptions.scopes = "profile_nickname profile_image";
+      }
+
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options: oauthOptions,
       });
 
       if (oauthError) {
