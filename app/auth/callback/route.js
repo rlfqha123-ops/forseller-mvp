@@ -10,9 +10,12 @@ export async function GET(request) {
   const next = requestUrl.searchParams.get("next") ?? "/dashboard";
 
   if (code) {
-    // 사용자의 실제 수파베이스 접속 정보를 단단하게 고정합니다.
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ysqvirbmfgxsnsdhqgag.supabase.co";
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_WtWP2p12zJ5VwOt3lv2JMQ_Dz_9N-TV";
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return NextResponse.redirect(`${requestUrl.origin}/login?error=missing-env`);
+    }
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
