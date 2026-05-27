@@ -121,9 +121,12 @@ export default function LoginPage() {
         redirectTo: `${window.location.origin}/auth/callback`,
       };
 
-      // 카카오 앱이 개인 개발자용이라 이메일 권한이 없을 경우를 대비해 닉네임과 프로필 사진만 요청하도록 스코프를 제한합니다.
+      // 카카오 앱이 개인 개발자용이라 이메일 권한이 없을 경우를 대비해, 
+      // queryParams.scope를 통해 카카오로 가는 최종 scope 파라미터에서 account_email을 물리적으로 완전히 제외하고 강제 오버라이드합니다.
       if (provider === "kakao") {
-        oauthOptions.scopes = "profile_nickname profile_image";
+        oauthOptions.queryParams = {
+          scope: "profile_nickname,profile_image",
+        };
       }
 
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
