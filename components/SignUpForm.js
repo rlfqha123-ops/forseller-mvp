@@ -125,9 +125,9 @@ export default function SignUpForm({ onSignUpSuccess }) {
       // 카카오 앱이 개인 개발자용이라 이메일 권한이 없을 경우를 대비해, 
       // scopes와 queryParams.scope를 통해 카카오와 수파베이스에 전달되는 scope 파라미터에서 account_email을 물리적으로 완전히 제외하고 강제 오버라이드합니다.
       if (provider === "kakao") {
-        oauthOptions.scopes = "profile";
+        oauthOptions.scopes = "profile_nickname profile_image";
         oauthOptions.queryParams = {
-          scope: "profile",
+          scope: "profile_nickname,profile_image",
         };
       }
 
