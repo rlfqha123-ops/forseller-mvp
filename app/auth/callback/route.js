@@ -39,10 +39,12 @@ export async function GET(request) {
 
     if (!error) {
       // 토큰 교환에 성공하면, 버셀 도메인의 대시보드(/dashboard) 경로로 안전하게 리다이렉트합니다.
-      return NextResponse.redirect(`${requestUrl.origin}${next}`);
+      const redirectOrigin = process.env.NODE_ENV === "production" ? "https://forseller-mvp.vercel.app" : requestUrl.origin;
+      return NextResponse.redirect(`${redirectOrigin}${next}`);
     }
   }
 
   // 로그인 인증 토큰 교환 실패 시 오류 쿼리를 안고 로그인 페이지로 복귀시킵니다.
-  return NextResponse.redirect(`${requestUrl.origin}/login?error=oauth-exchange-failed`);
+  const redirectOrigin = process.env.NODE_ENV === "production" ? "https://forseller-mvp.vercel.app" : requestUrl.origin;
+  return NextResponse.redirect(`${redirectOrigin}/login?error=oauth-exchange-failed`);
 }
