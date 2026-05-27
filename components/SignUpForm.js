@@ -349,17 +349,29 @@ export default function SignUpForm({ onSignUpSuccess }) {
           <div className="w-full border-t border-slate-200"></div>
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-slate-400 font-medium">또는 소셜 계정으로 가입</span>
+          <span className="bg-white px-4 text-slate-400 font-bold tracking-wide">1초 간편 소셜 가입</span>
         </div>
       </div>
 
-      {/* 소셜 로그인 버튼 그리드 */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* 소셜 가입 버튼 리스트 (풀 와이드 세로 배치) */}
+      <div className="flex flex-col gap-3">
+        {/* 카카오 가입 버튼 */}
+        <button
+          type="button"
+          onClick={() => handleSocialSignUp("kakao")}
+          className="w-full flex items-center justify-center gap-3 bg-[#FEE500] hover:bg-[#FEE500]/95 text-[#191919] text-xs md:text-sm font-black py-3.5 px-4 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+        >
+          <svg className="w-4 h-4 text-[#191919]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3c-4.97 0-9 3.18-9 7.1 0 2.53 1.7 4.75 4.27 5.9l-.86 3.16c-.1.35.12.72.48.8.1.02.2.02.28 0l3.72-2.48c.37.05.74.08 1.13.08 4.97 0 9-3.18 9-7.1S16.97 3 12 3z" />
+          </svg>
+          카카오톡으로 시작하기
+        </button>
+
         {/* 구글 가입 버튼 */}
         <button
           type="button"
           onClick={() => handleSocialSignUp("google")}
-          className="flex items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold py-3.5 px-4 rounded-xl transition-all duration-200 shadow-sm cursor-pointer"
+          className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs md:text-sm font-bold py-3.5 px-4 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
@@ -379,19 +391,7 @@ export default function SignUpForm({ onSignUpSuccess }) {
               d="M12 22.96c3.24 0 5.97-1.07 7.96-2.91l-3.65-2.83c-1.01.68-2.31 1.09-4.31 1.09-3.13 0-5.84-2.56-6.76-5.46l-3.85 3c1.98 3.85 5.96 6.5 10.61 6.5z"
             />
           </svg>
-          Google
-        </button>
-
-        {/* 카카오 가입 버튼 */}
-        <button
-          type="button"
-          onClick={() => handleSocialSignUp("kakao")}
-          className="flex items-center justify-center gap-2 bg-[#FEE500] hover:bg-[#FEE500]/90 text-[#191919] text-xs font-bold py-3.5 px-4 rounded-xl transition-all duration-200 shadow-sm cursor-pointer"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 3c-4.97 0-9 3.18-9 7.1 0 2.53 1.7 4.75 4.27 5.9l-.86 3.16c-.1.35.12.72.48.8.1.02.2.02.28 0l3.72-2.48c.37.05.74.08 1.13.08 4.97 0 9-3.18 9-7.1S16.97 3 12 3z" />
-          </svg>
-          Kakao
+          Google로 시작하기
         </button>
       </div>
     </div>
