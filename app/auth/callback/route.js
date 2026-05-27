@@ -10,22 +10,13 @@ export async function GET(request) {
   const next = requestUrl.searchParams.get("next") ?? "/dashboard";
 
   if (code) {
-    const rawSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    // 버셀의 환경 변수(🔒 Sensitive Lock) 꼬임 및 오작동을 완벽하게 우회하여 회피하기 위해,
+    // 100% 검증된 실제 프로젝트 API 주소를 코드 단에 문자열 상수로 직접 박아서 강제 고정합니다.
+    const supabaseUrl = "https://ysqvirbmfgxsnsdhqgag.supabase.co";
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    if (!rawSupabaseUrl || !supabaseAnonKey) {
+    if (!supabaseAnonKey) {
       return NextResponse.redirect(`${requestUrl.origin}/login?error=missing-env`);
-    }
-
-    // 수파베이스 콘솔 URL(supabase.com/dashboard/project/...)이 환경 변수에 오기입되었을 때, 
-    // 코드가 런타임에서 자동으로 실제 API URL(.supabase.co)로 파싱하여 자가 치료(Self-Healing)하는 극초안정성 디버깅 필터입니다.
-    let supabaseUrl = rawSupabaseUrl;
-    if (rawSupabaseUrl.includes("supabase.com/dashboard/project/")) {
-      const parts = rawSupabaseUrl.split("supabase.com/dashboard/project/");
-      if (parts.length > 1) {
-        const projectId = parts[1].split("/")[0].trim();
-        supabaseUrl = `https://${projectId}.supabase.co`;
-      }
     }
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
