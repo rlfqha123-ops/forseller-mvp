@@ -74,3 +74,27 @@ Next.js 클라이언트 코드(`signInWithOAuth`)에서 소셜 로그인 호출 
 * 설정 완료 후 하단의 **Save** 버튼을 눌러 저장합니다.
 * 이 설정이 완료되면, 이메일 권한이 없는 개인 개발자용 카카오 앱 환경에서도 수파베이스가 정상적으로 닉네임과 프로필 정보를 매칭하여 신규 유저 등록 및 대시보드 로그인 처리를 성공적으로 마감합니다.
 
+---
+
+## 4. 최종 마감 및 연동 무결성 검증 완료
+
+### 1) 구글 OAuth 1초 로그인 버튼 연동 (`app/login/page.js` / `components/SignUpForm.js`)
+* 로그인 폼 및 회원가입 폼 내 [Google로 시작하기] 버튼 클릭 시 `handleSocialLogin('google')` / `handleSocialSignUp('google')` 핸들러가 트리거됩니다.
+* 호출 시 Vercel 상용 웹앱 주소인 `https://forseller-mvp.vercel.app/auth/callback`이 `redirectTo` 주소로 강제 바인딩되어 완벽히 발사됩니다.
+* 수파베이스 클라이언트 연동 코드:
+  ```javascript
+  supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: 'https://forseller-mvp.vercel.app/auth/callback'
+    }
+  })
+  ```
+
+### 2) 클라이언트 콜백 무결성 검증 (`app/auth/callback/page.js`)
+* 카카오 및 구글 소셜 로그인 완료 후 브라우저 해시 파라미터(`#access_token=...&refresh_token=...`)를 가지고 복귀할 때, 구형 서버사이드 라우터의 한계(해시 분실)를 극복하기 위해 구현된 **클라이언트 사이드 콜백 컴포넌트(`page.js`)**가 작동합니다.
+* 브라우저 런타임에서 `supabase.auth.getSession()`이 즉시 URL 해시를 파싱하여 정상 인증 세션을 획득합니다.
+* 세션 획득 성공 시, 대시보드 진입을 위한 로컬스토리지 장부(`forSeller_loginSession`)에 이메일 정보(`session.user.email` 또는 `session.user.user_metadata.email`)와 `access_token`을 완벽하게 굽습니다.
+* 세션이 안전하게 주입되면 `router.push('/dashboard')`를 통해 **1초 만에 셀러 대시보드로 원샷 직행**하며, 튕김 현상이나 무한 루프 에러 없이 매끄럽게 프리패스 통과합니다.
+
+
