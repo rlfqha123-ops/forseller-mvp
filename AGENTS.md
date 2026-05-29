@@ -72,7 +72,26 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **AGENTS.md 동기화**: `AGENTS.md` (또는 `agent.md`) 파일만큼은 사용자가 최종 확인하고 GitHub 메인(`main`) 브랜치에 승인(Merge)해 줄 때만 동기화하고 적용하세요.
 - **구글/카카오 로그인 연동 완료**: Vercel 프로덕션 도메인 `https://forseller-mvp.vercel.app` 환경에 맞춰 수파베이스 Redirect URI 및 카카오/구글 콘솔 세팅이 마감되었습니다. 클라이언트 콜백(`app/auth/callback/page.js`)을 기반으로 세션을 로컬스토리지 `forSeller_loginSession`에 즉시 주입하고 `/dashboard`로 1초 이내 직행하도록 연동 무결성이 확보되었습니다.
 
+## 6. 소셜 로그인 연동 및 세션 유지 규격 히스토리
+
+### 1) 카카오 & 구글 1초 간편 로그인/가입 연동 완료
+* **진입 이벤트 바인딩**: `app/login/page.js` 및 `components/SignUpForm.js` 내 소셜 로그인/가입용 Google, Kakao 버튼에 이벤트 핸들러(`handleSocialLogin` / `handleSocialSignUp`)를 온전히 장착하여 동작합니다.
+* **상용 환경 고정 리다이렉트**: 수파베이스와 OAuth 간 통신 시 최종 브라우저 복귀를 안전하게 조율하도록 Vercel 프로덕션 콜백 도메인인 `https://forseller-mvp.vercel.app/auth/callback`을 `redirectTo`로 하드코딩 고정하였습니다.
+* **이메일 없는 카카오 계정 예외 처리**: 개인 개발자용 카카오 로그인 앱의 특성상 이메일 수집 권한 부재로 인한 유저 생성 에러를 방어하고자, 수파베이스 카카오 프로바이더의 `Allow users without an email` (이메일 없는 사용자 허용) 옵션을 ON으로 활성화하고 닉네임과 프로필 정보를 완벽히 바인딩시켰습니다.
+
+### 2) 브라우저 클라이언트 사이드 콜백 아키텍처 (`app/auth/callback/page.js`)
+* Implicit Flow 특성상 소셜 인증 후 복귀 시 액세스 토큰이 URL 해시 프래그먼트(`#access_token=...`) 형태로 넘어옵니다. 브라우저가 해시 정보를 서버에 전송하지 않아 404/실패를 야기하던 구형 서버사이드 라우터(`route.js`) 방식을 과감히 폐기하고, 브라우저 런타임에서 곧바로 실행되는 **클라이언트 콜백 페이지 컴포넌트**로 대체 완성했습니다.
+* `supabase.auth.getSession()`이 즉각적으로 브라우저 주소창의 해시 값을 파싱하여 세션을 확보합니다.
+* 확보된 세션 정보를 가공하여 대시보드 로직이 읽는 로컬스토리지 로그인 장부 `forSeller_loginSession`에 이메일 정보(`session.user.email` 또는 `session.user.user_metadata.email` 또는 `"kakao-partner"`)와 `access_token`을 즉시 굽습니다.
+* 장부가 기록되는 즉시 `router.push('/dashboard')`를 가동하여 **1초 만에 튕김 없이 매끄럽게 셀러 대시보드로 무결 통과**시킵니다.
+
+### 3) 세션 보안 유지 및 자동 만료 표준 규격 (7일 만료)
+* **JWT Expiry (토큰 유효기간)**: `3600초 (1시간)`
+* **Refresh Token Expiration (재발급 카드 수명)**: `604,800초 (7일)`
+* **작동 스펙**: 파트너 셀러가 빈번하게 업무를 수행하는 동안에는 조용히 토큰이 갱신되어 편리하게 대시보드에 자동 진입하지만, **보안 위협 방지를 위해 자리를 비우거나 미접속한 지 7일이 경과하는 순간** 브라우저 세션 장부가 만료되어 자동으로 로그인 화면으로 리다이렉트되며 다시 안전하게 소셜 계정 재인증을 요구하는 철통 보안 구조를 수립 및 적용했습니다.
+
 ---
 
 **이 지침이 잘 작동하고 있는지 확인하는 기준:** diff(코드 변경점)에 불필요한 변경 사항이 줄어들고, 과도하게 복잡해서 코드를 다시 짜는 일이 줄어들며, 실수를 저지른 후 수습하기보다 구현 전에 명확히 짚고 넘어가는 질문이 많아집니다.
+
 
